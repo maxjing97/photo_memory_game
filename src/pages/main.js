@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import "../App.css"
+import { useNavigate } from 'react-router-dom';
 
 export default function Main() {
-    const [time, setTime] = useState(0);
+    const navigate = useNavigate();
 
     return (
         <div style={styles.page}>
             <div style={styles.container}>
                 <div style={styles.text}>
-                    Test Your Visual Memory Now: {time}
+                    Test Your Visual Memory Now
                 </div>
                 <h2>Select a time for the challenge</h2>
                 <div style={styles.buttonContainer}>
-                    <button onClick={() => setTime(5)} style={styles.button}>5s</button>
-                    <button onClick={() => setTime(30)} style={styles.button}>30s</button>
+                    <button onClick={() =>  navigate('/5select')} style={styles.button}>5s</button>
+                    <button onClick={() => navigate('/30select') } style={styles.button}>30s</button>
                 </div>
             </div>
         </div>
     );
 }
+
 const styles = {
     page: {
         height: '100vh',
