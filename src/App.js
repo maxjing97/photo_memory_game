@@ -1,7 +1,9 @@
 import './App.css';
 import { Route,Routes } from 'react-router-dom';
 import Navbar from './pages/navbar';
-import Sample from './pages/test';
+import Main from './pages/main';
+import Stats from './pages/stats';
+
 
 function App() {
   return (
@@ -9,13 +11,11 @@ function App() {
     <Navbar/>
       <div>
     <Routes>        
-      <Route path="/"  element={<Sample/>} />
-      <Route path="/favourites"  element={<Sample />}/>
-      <Route path="/cart"  element={<Sample/>}/>
+      <Route path="/main"  element={<Main/>} />
+      <Route path="/stats"  element={<Stats />}/>
     </Routes>
     </div>
     </>
-   
   );
 }
 
