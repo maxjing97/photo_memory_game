@@ -1,6 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
+//lists of the words corresponding to the images in the order
+// sorted in folders for each of the image lists
+listA = ["lattern", "valley","spoon", "lightning", "puzzle",
+        "carpet","robot","mirror", "volcano","guitar"]
+
+listB = ["forest", "castle","ladder", "notebook", "candle",
+        "anchor","helmet","river", "statue","clock"]
+
+listC = ["train", "feather","coins", "whale", "telescope",
+        "compass","dragon","fountain", "diamond","mask"] 
+
 function Images(props) {
   const navigate = useNavigate();
 
