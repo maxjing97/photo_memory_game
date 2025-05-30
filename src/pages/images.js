@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+//add component to display the challenge
+
 //lists of the words corresponding to the images in the order
 // sorted in folders for each of the image lists
 const listA = ["lattern", "valley","spoon", "lightning", "puzzle",
@@ -17,43 +19,62 @@ const ComponentA = () => <div style={styles}>Component A</div>;
 const ComponentB = () => <div style={styles}>Component B</div>;
 const ComponentC = () => <div style={styles}>Component C</div>;
 
-//function to randomly select a word list
+//function to randomly select a word list with its name, and a randomly selected irrelevant word list
 function randomWordList() {
   //randomly select a list to use
   const list_names = ["A","B","C"] 
   const list_chosen = list_names[Math.floor(Math.random() * list_names.length)];
   //get the correspoding words in order
   let word_list = []
+  let irrelevant_list = [] //word list of excluded words to include in the list of 10 irrelevant words to be randomly chosen
+
   switch(list_chosen) {
     case "A":
       word_list = listA
+      irrelevant_list = listB.concat(listC)
       break;
     case "B":
       word_list = listB
+      irrelevant_list = listA.concat(listC)
       break;
     case "C":
       word_list = listC
+      irrelevant_list = listA.concat(listB)
       break;
   }
   
-  return [list_chosen, word_list]
+  //randomly select 10 from the list 
+  let irrelevant_words = new Set()
+  while (irrelevant_words.size < 10) {
+    const random = irrelevant_list[Math.floor(Math.random()*irrelevant_list.length)]
+    irrelevant_words.add(random)
+  }
+  irrelevant_words = Array.from(irrelevant_words) //convert to list
+
+  return [list_chosen, word_list, irrelevant_words ]
 }
 
 {/* create components based on image conditions*/}
 function getComponents() { 
-  const [list_name, main_list] = randomWordList() //destructure
+  const [list_name, relevant, irrelevant] = randomWordList() //destructure
+  console.log("list name:"+list_name)
+  console.log("relevant words:"+relevant)
+  console.log("irrelevant words:"+irrelevant)
 
   let return_list = []
-  for(let i = 1; i <= 30; i++) {
-    //pass to another defined component that returns the image+card combination
-    
-    return_list.push() //add component to the list
+//loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
+  for(let cond = 1; cond <= 3; cond++) {
+    for(let i = 1; i <= 10; i++) {
+      //pass to another defined component that returns the image+card combination
+      
+      return_list.push(ComponentA) //add component to the list
+    }
   }
-
   return return_list
 }
 
-function Images(props) {
+
+export default function Images(props) {
   const [index, setIndex] = useState(0);
   const navigate = useNavigate();
   const componentsList = getComponents()
@@ -91,7 +112,11 @@ function Images(props) {
   );
 };
 
-export default Images;
+//image card to display the images
+
+
+
+
 
 const styles = {
   all: {
