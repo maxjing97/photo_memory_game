@@ -73,8 +73,33 @@ const TextImageSplit = ({ text, imageUrl }) => {
     </div>
   );
 };
-//child component 1: 
+//child component 2: submission component
+const WordMatcher = ({ targetWord, onMatch }) => {
+  const [input, setInput] = useState('');
+  const [correct, setCorrect] = useState(0); // store if the value is correct or not
 
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setInput(value);
+
+    if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
+      setCorrect(1)
+      onMatch(value);
+    }
+  };
+
+  return (
+    <div style={styles.wrapper}>
+      <input
+        type="text"
+        value={input}
+        onChange={handleChange}
+        placeholder="Start typing..."
+        style={styles.input}
+      />
+    </div>
+  );
+}
 
 {/* create components based on image conditions*/}
 function getComponents() { 
@@ -97,8 +122,9 @@ function getComponents() {
       //pass to another defined component that returns the image+card combination
       //depending on the condition, we give different combinations to the components
       const imageComponent = <TextImageSplit text={wordList[i]} imageUrl={image_paths[i]}/>
+      const matchingComponent = <WordMatcher targetWord={wordList[i]}/> //component to test matching
       return_list.push(imageComponent) //add image component to the list
-      //add selector (allows user to score)
+      return_list.push(matchingComponent)//add selector (allows user to score)
     }
   }
   return return_list
@@ -174,5 +200,19 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     transition: 'background-color 0.3s ease',
+  }, text_wrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '100px',
+  },
+  text_input: {
+    padding: '12px 20px',
+    fontSize: '1rem',
+    width: '300px',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    outline: 'none',
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
   }
 };
