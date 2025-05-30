@@ -64,6 +64,7 @@ function getComponents() {
   let return_list = []
 //loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
   for(let cond = 1; cond <= 3; cond++) {
+    
     for(let i = 1; i <= 10; i++) {
       //pass to another defined component that returns the image+card combination
       
