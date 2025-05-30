@@ -73,6 +73,7 @@ const TextImageSplit = ({ text, imageUrl }) => {
     </div>
   );
 };
+//child component 1: 
 
 
 {/* create components based on image conditions*/}
