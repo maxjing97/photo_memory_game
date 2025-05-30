@@ -19,6 +19,16 @@ const ComponentA = () => <div style={styles}>Component A</div>;
 const ComponentB = () => <div style={styles}>Component B</div>;
 const ComponentC = () => <div style={styles}>Component C</div>;
 
+//function to get the paths of photos for a certain list
+function getFolderPaths(letter) {
+  let paths = []
+
+  for(let i = 1; i <= 10; i++) {
+    paths.push(`../test_images/list${letter}/${String(i)}.png`)
+  }
+  return paths 
+}
+
 //function to randomly select a word list with its name, and a randomly selected irrelevant word list
 function randomWordList() {
   //randomly select a list to use
@@ -54,55 +64,62 @@ function randomWordList() {
   return [list_chosen, word_list, irrelevant_words ]
 }
 
+//child component 1: display images + text etc
+const TextImageSplit = ({ text, imageUrl }) => {
+  return (
+    <div style={styles.img_container}>
+      <div style={styles.img_text}>{text}</div>
+      <img src={imageUrl} alt="No Image Round" style={styles.image} />
+    </div>
+  );
+};
+
+
 {/* create components based on image conditions*/}
 function getComponents() { 
-  const [list_name, relevant, irrelevant] = randomWordList() //destructure
-  console.log("list name:"+list_name)
-  console.log("relevant words:"+relevant)
-  console.log("irrelevant words:"+irrelevant)
-
   let return_list = []
 //loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
   for(let cond = 1; cond <= 3; cond++) {
-    
-    for(let i = 1; i <= 10; i++) {
+    const [list_name, relevant, irrelevant] = randomWordList() //destructure
+    let image_paths = getFolderPaths(list_name)
+    let wordList = [] //we choose either relevant or irrelevant word lists to used based on the condition
+    if(cond === 1) {
+      wordList = relevant
+    } else {
+      wordList = irrelevant
+    }
+    //additionally, if image condition if 2, we set image paths of invalid (bc we want to show no images)
+    if(cond === 2) {
+      image_paths = Array(10).fill("../bs")
+    }
+    for(let i = 0; i < 10; i++) {
       //pass to another defined component that returns the image+card combination
-      
-      return_list.push(ComponentA) //add component to the list
+      //depending on the condition, we give different combinations to the components
+      const imageComponent = <TextImageSplit text={wordList[i]} imageUrl={image_paths[i]}/>
+      return_list.push(imageComponent) //add image component to the list
+      //add selector (allows user to score)
     }
   }
   return return_list
 }
 
-
-export default function Images(props) {
+export default function Images(props) { //main parent image component 
   const [index, setIndex] = useState(0);
   const navigate = useNavigate();
   const componentsList = getComponents()
 
 
-  // Automatically advance every 10 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % componentsList.length);
-    }, 10000); // 10,000ms = 10s
-
-    return () => clearInterval(timer); // Cleanup on unmount or re-render
-  }, []);
-
   // Manual skip button
   const handleSkip = () => {
     setIndex((prev) => (prev + 1) % componentsList.length);
   };
-
-  const CurrentComponent = componentsList[index]; 
   
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each image</h2>
 
-      <CurrentComponent />
+      {componentsList[index]} {/* render component in the index*/}
       <div>
         <button onClick={handleSkip} style={styles.skip}>Skip to test →</button>
       </div>
@@ -115,11 +132,22 @@ export default function Images(props) {
 
 //image card to display the images
 
-
-
-
-
 const styles = {
+  img_container: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '10px',
+    padding: '10px',
+  },
+  img_text: {
+    flex: 1,
+    fontSize: '20pt',
+  },
+  image: {
+    height: '300px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+  },
   all: {
       alignItems: 'center',
       textAlign: 'center',
