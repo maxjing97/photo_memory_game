@@ -77,6 +77,25 @@ const TextInput = () => {
     </div>
   );
 };
+//child component 3: component to display the final results and connect to a database to store them
+const Results = ({data}) => {
+  const a1 = data.slice(0, 10).reduce((a,b)=>a+b,0) //compute accuracy for condition 1 (sum elements from 1 to 10), then divide by 10 
+  const a2 = data.slice(10,20).reduce((a,b)=>a+b,0) //compute accuracy for condition 2
+  const a3 = data.slice(20, 30).reduce((a,b)=>a+b,0) //compute accuracy for condition 3
+  //compute total accuracy
+  const total = data.slice(0, 30).reduce((a,b)=>a+b,0)
+  return (
+    <div>
+      <h2>Results Page</h2>
+      <h3>Here are results of your memory test:</h3>
+      <p>Accuracy when shown a relevant image + word {a1 * 10}%</p>
+      <p>Accuracy when shown a no image + word {a2 * 10}%</p>
+      <p>Accuracy when shown an irrelevant image + word {a3 * 10}%</p>
+      <p>total accuracy: {Math.floor(total/30*100)}% or {total} correct</p>
+    </div>
+  );
+};
+
 
 //function to get the list of components used
 function getComponents() { 
@@ -117,12 +136,11 @@ function getComponents() {
 ////tracks accuracy of all words 30 for now, every 10 different conditions
 let accuracies = Array(30).fill(0)
 const [components, word_list] = getComponents() //get list of current components, word list
-
 export default function Images(props) { //main parent image component (to avoid remounts when changing child components shown)
+  const [componentList, setComponentList] = useState(components)//store the fixed list of components 
   const [index, setIndex] = useState(0); //this index is key, cycling through through all words (60 for now 2 for ach)
   const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
   const [text, setText] = useState(''); //set text in the input box
-  const [cond, setCond] = useState(1); //image condition: possible choices are 1-3
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
   const navigate = useNavigate();
     
@@ -132,42 +150,37 @@ export default function Images(props) { //main parent image component (to avoid 
 
   const nextSection = () => { // (0 by default)
     //if isText is 0, this is an image one, so we move to a text one (so we stay on the same word)
-    if (isText == 0) {
+    if (isText == 0 && index < 59) {
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
       setIsText(1); //move to the text section 
       setnextText("Don't Remember? Try the Next Word ➡")
-    } else { //in this case, the user has skipped the section, so record the accuracy as 0 for this, while moving on to the next image to test
+    } else if (isText == 1 && index < 59) { //in this case, the user has skipped the section, so record the accuracy as 0 for this, while moving on to the next image to test
       setIsText(0); //move to the word section 
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
       setnextText("Skip to test ➡")//set the appropriate text for the button
       //update component list to the next index since state changes in React do not apply immediately, being applied by the next render cycle
+    } else {
+      //when we have reached the end, only display the results page: reset component list
+      setIndex(0);
+      setIsText(0);
+      setComponentList([<Results data={accuracies}/>])
     }
   }
 
   //function used to handle changes in the text input box
   const handleTextChange = (e) => {
     setText(e.target.value) //set the text value dynamically
-    console.log("index:", index)
     const value = e.target.value;
     const targetWord = word_list[(index-1)/2] //get the target for based on the for index
-    console.log("targetWord:",targetWord)
     if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
       setText("") //reset if there is match
-      console.log("trigged: correct text entered")
       accuracies[(index-1)/2] = 1 //find the correponding accuracy index to change
       nextSection() //more to the next one
     }
   };
 
-  //function to advance the component if the enter key is pressed in the text book
-  const handleEnterPress = (e) => {
-    if (e.key === 'Enter') {
-      nextSection();
-    }
-  }
 
-  console.log("accuracies:", accuracies)
-
+  console.log(index)
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
@@ -175,8 +188,8 @@ export default function Images(props) { //main parent image component (to avoid 
 
       <div style={styles.text_container}>
       {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
-      {components.map((Component, i) => (
-        <div key={i} style={{ display: index == i ? 'block' : 'none' }}>
+      {componentList.map((Component, i) => (
+        <div key={i} style={{ display: index == (i % componentList.length) ? 'block' : 'none' }}>
           {Component}
         </div>
       ))}
@@ -189,7 +202,6 @@ export default function Images(props) { //main parent image component (to avoid 
               type="text"
               value = {text}
               onChange={handleTextChange}
-              onKeyDown={handleEnterPress}
               placeholder="Start typing..."
               style={styles.text_input}
             />
@@ -197,7 +209,7 @@ export default function Images(props) { //main parent image component (to avoid 
         </div>
       </div>
 
-      <button onClick={nextSection} onKeyDown={handleEnterPress} style={styles.skip}>{nextText}</button> {/* skip function inherted from parent component*/}
+      <button onClick={nextSection} style={{...styles.skip, ...{display: componentList.length != 1 ? 'block' : 'none' }}}>{nextText}</button> {/* skip function inherted from parent component (display only the number of components is not 0)*/}
       <button onClick={() => navigate('/')} style={styles.back}>
       ⬅ Back to Menu
       </button>
