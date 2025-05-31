@@ -69,6 +69,15 @@ const TextImageSplit = ({ text, imageUrl}) => {
   );
 };
 
+//child component 2: display text and more for the text input
+const TextInput = () => {
+  return (
+    <div style={styles.text_container}>
+      <h2>Try to remember the word you just saw</h2>
+    </div>
+  );
+};
+
 //function to get the list of components used
 function getComponents() { 
   let component_list = []
@@ -96,9 +105,7 @@ function getComponents() {
       const currWord = wordList[i]
       final_word_list.push(currWord)//add word to the final word list
       const imageComponent = <TextImageSplit text={currWord} imageUrl={image_paths[i]}/>
-      const textInput = <div>
-                          <h2>Try to remember the word you just saw</h2>
-                        </div>
+      const textInput = <TextInput/>
       component_list.push(imageComponent) //add image component to the list
       component_list.push(textInput)
     }
@@ -109,8 +116,6 @@ function getComponents() {
 
 ////tracks accuracy of all words 30 for now, every 10 different conditions
 let accuracies = Array(30).fill(0)
-
-
 const [components, word_list] = getComponents() //get list of current components, word list
 
 export default function Images(props) { //main parent image component (to avoid remounts when changing child components shown)
