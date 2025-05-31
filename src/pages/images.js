@@ -72,7 +72,7 @@ const TextImageSplit = ({ text, imageUrl}) => {
 //child component 2: display text and more for the text input
 const TextInput = () => {
   return (
-    <div style={styles.text_container}>
+    <div>
       <h2>Try to remember the word you just saw</h2>
     </div>
   );
@@ -121,6 +121,7 @@ const [components, word_list] = getComponents() //get list of current components
 export default function Images(props) { //main parent image component (to avoid remounts when changing child components shown)
   const [index, setIndex] = useState(0); //this index is key, cycling through through all words (60 for now 2 for ach)
   const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
+  const [text, setText] = useState(''); //set text in the input box
   const [cond, setCond] = useState(1); //image condition: possible choices are 1-3
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
   const navigate = useNavigate();
@@ -145,15 +146,25 @@ export default function Images(props) { //main parent image component (to avoid 
 
   //function used to handle changes in the text input box
   const handleTextChange = (e) => {
+    setText(e.target.value) //set the text value dynamically
     console.log("index:", index)
     const value = e.target.value;
     const targetWord = word_list[(index-1)/2] //get the target for based on the for index
     console.log("targetWord:",targetWord)
     if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
+      setText("") //reset if there is match
       console.log("trigged: correct text entered")
       accuracies[(index-1)/2] = 1 //find the correponding accuracy index to change
+      nextSection() //more to the next one
     }
   };
+
+  //function to advance the component if the enter key is pressed in the text book
+  const handleEnterPress = (e) => {
+    if (e.key === 'Enter') {
+      nextSection();
+    }
+  }
 
   console.log("accuracies:", accuracies)
 
@@ -162,6 +173,7 @@ export default function Images(props) { //main parent image component (to avoid 
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each word</h2>
 
+      <div style={styles.text_container}>
       {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
       {components.map((Component, i) => (
         <div key={i} style={{ display: index == i ? 'block' : 'none' }}>
@@ -170,18 +182,22 @@ export default function Images(props) { //main parent image component (to avoid 
       ))}
 
       {/* button for inputting text-display only if the index is odd*/}
-      <div style={{ display: (index % 2 == 1) ? 'block' : 'none' }}>
-        <div style={styles.text_wrapper}>
-          <input
-            type="text"
-            onChange={handleTextChange}
-            placeholder="Start typing..."
-            style={styles.text_input}
-          />
+      
+        <div style={{ display: (index % 2 == 1) ? 'block' : 'none' }}>
+          <div style={styles.text_wrapper}>
+            <input
+              type="text"
+              value = {text}
+              onChange={handleTextChange}
+              onKeyDown={handleEnterPress}
+              placeholder="Start typing..."
+              style={styles.text_input}
+            />
+          </div>
         </div>
       </div>
 
-      <button onClick={nextSection} style={styles.skip}>{nextText}</button> {/* skip function inherted from parent component*/}
+      <button onClick={nextSection} onKeyDown={handleEnterPress} style={styles.skip}>{nextText}</button> {/* skip function inherted from parent component*/}
       <button onClick={() => navigate('/')} style={styles.back}>
       ⬅ Back to Menu
       </button>
@@ -203,9 +219,9 @@ const styles = {
     fontSize: '20pt',
   },
   image: {
-    height: '300px',
-    objectFit: 'cover',
-    borderRadius: '8px',
+    height: '350px',
+    width:"350px",
+    objectFit: 'contain',
   },
   all: {
     display: "flex", 
@@ -237,14 +253,18 @@ const styles = {
   }, text_wrapper: {
     display: 'flex',
     justifyContent: 'center',
-    marginTop: '100px',
-    padding: "120px"
   },
-  text_input: {
-    padding: '12px 20px',
+  text_input : {
+    padding: "5px",
+    fontSize: '20px',   // Large font
+    fontWeight: 'bold'  // Bold text
+  },
+  text_container: {
+    padding: '12px',
     fontSize: '1rem',
-    width: '300px',
-    border: '1px solid #ccc',
+    width: '400px',
+    height: '400px',
+    border: '3px solid #ccc',
     borderRadius: '8px',
     outline: 'none',
     boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
