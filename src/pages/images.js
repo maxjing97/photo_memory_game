@@ -126,43 +126,14 @@ function getFinalObjs() {
 }
 
 
-function getComponents(handleSkip, handleTextSkip) { 
-  let return_list = []
-//loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
-  for(let cond = 1; cond <= 3; cond++) {
-    const [list_name, relevant, irrelevant] = randomWordList() //destructure
-    let image_paths = getFolderPaths(list_name)
-    let wordList = [] //we choose either relevant or irrelevant word lists to used based on the condition
-    if(cond == 1) {
-      wordList = relevant
-    } else {
-      wordList = irrelevant
-    }
-    //additionally, if image condition if 2, we set image paths of invalid (bc we want to show no images)
-    if(cond == 2) {
-      image_paths = Array(10).fill("/test_images/blank.png")
-    }
-    for(let i = 0; i < 10; i++) {
-      //pass to another defined component that returns the image+card combination
-      //depending on the condition, we give different combinations to the components
-      const currWord = wordList[i]
-      const imageComponent = <TextImageSplit text={currWord} imageUrl={image_paths[i]} handleSkip={handleSkip}/>
-      const matchingComponent = <WordMatcher targetWord={currWord} handleTextSkip={handleTextSkip}/> //component to test matching
-      return_list.push(imageComponent) //add image component to the list
-      return_list.push(matchingComponent)//add selector (allows user to score)
-    }
-  }
-  return return_list
-}
-
-
 const [wordsObj, imageObj] = getFinalObjs() //get objects describing the image links and wordlists
 const combinedWordList = [...wordsObj[1], ...wordsObj[2],...wordsObj[3]] //combined word list (30 across 3 conditions)
 const combinedImgList = [...imageObj[1], ...imageObj[2],...imageObj[3]] //combined image links list (30 across 3 conditions)
 
 
 export default function Images(props) { //main parent image component 
-  const [index, setIndex] = useState(0); //this index is key, the
+  const [index, setIndex] = useState(0); //this index is key, cycling through through all words
+  const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
   const [cond, setCond] = useState(1); //image condition: possible choices are 1-3
   const [cond1, setCond1] = useState(0);//cond 1 accuracy (tracks accuracy of all cond1 cases)
   const [cond2, setCond2] = useState(0);//cond 2 accuracy (tracks accuracy of all cond1 cases)
@@ -171,15 +142,19 @@ export default function Images(props) { //main parent image component
   const navigate = useNavigate();
 
   const nextSection = () => {
-    //if index is even, this is an image one, so we move to a text one
-    if (index % 2 == 0) {
-      setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
+    //if isText is 0, this is an image one, so we move to a text one (so we stay on the same word)
+    if (isText == 0) {
+      setIsText(1); //move to the text section 
+      setnextText("Don't Remember? Try the Next Word ➡")
     } else {
+      console.log()
+      setIsText(0); //move to the word section 
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
-      //move to the next component lists when 
+      setnextText("Skip to test ➡")//set the appropriate text for the button
+      //update component list to the next index since state changes in React do not apply immediately, being applied by the next render cycle
       setComponents([
-        <TextImageSplit text={combinedWordList[index]} imageUrl={combinedImgList[index]}/>,
-        <WordMatcher targetWord={combinedWordList[index]} handleTextSkip={handleTextSkip}/>
+        <TextImageSplit text={combinedWordList[index+1]} imageUrl={combinedImgList[index+1]}/>,
+        <WordMatcher targetWord={combinedWordList[index+1]} handleTextSkip={handleTextSkip}/> 
       ])
     }
   }
@@ -191,19 +166,20 @@ export default function Images(props) { //main parent image component
   
   //set the current react component list
   const [currComponents, setComponents] = useState([
-    <TextImageSplit text={combinedWordList[index]} imageUrl={combinedImgList[index]}/>,
-    <WordMatcher targetWord={combinedWordList[index]} handleTextSkip={handleTextSkip}/>
+    <TextImageSplit text={combinedWordList[0]} imageUrl={combinedImgList[index]}/>,
+    <WordMatcher targetWord={combinedWordList[0]} handleTextSkip={handleTextSkip}/>
   ])
-
+  console.log("current word index:", index)
+  console.log("word_list:", combinedWordList)
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each word</h2>
 
-      {currComponents[index % 2]} {/* render component in the index (0 or 1) of the list of components*/}
+      {currComponents[isText]} {/* render component in the index (0 or 1) of the list of components*/}
       
 
-      <button onClick={nextSection} style={styles.skip}>Don't Remember? Try the Next Word ➡</button> {/* skip function inherted from parent component*/}
+      <button onClick={nextSection} style={styles.skip}>{nextText}</button> {/* skip function inherted from parent component*/}
       <button onClick={() => navigate('/')} style={styles.back}>
       ⬅ Back to Menu
       </button>
@@ -230,8 +206,10 @@ const styles = {
     borderRadius: '8px',
   },
   all: {
-      alignItems: 'center',
-      textAlign: 'center',
+    display: "flex", 
+    flexDirection: "column",
+    alignItems: 'center',
+    textAlign: 'center',
   },
   back: {
     backgroundColor: '#e63946',     // vibrant red
