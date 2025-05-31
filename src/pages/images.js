@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 //add component to display the challenge
@@ -60,13 +60,11 @@ function randomWordList() {
 }
 
 //child component 1: display images + text etc
-const TextImageSplit = ({ text, imageUrl, handleSkip}) => {
+const TextImageSplit = ({ text, imageUrl}) => {
   return (
     <div style={styles.img_container}>
       <div style={styles.img_text}>{text}</div>
       <img src={imageUrl} alt="Should Not" style={styles.image} />
-
-      <button onClick={handleSkip} style={styles.skip}>Skip to test ➡</button> {/* skip function inherted from parent component*/}
     </div>
   );
 };
@@ -80,7 +78,7 @@ const WordMatcher = ({ targetWord,  handleTextSkip }) => {
     console.log("current target word:"+targetWord)
     if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
       setCorrect(1)
-      handleTextSkip() //if word matches, handle the textSkip
+      handleTextSkip(1) //if word matches, handle the textSkip
     }
   };
 
@@ -92,7 +90,6 @@ const WordMatcher = ({ targetWord,  handleTextSkip }) => {
         placeholder="Start typing..."
         style={styles.text_input}
       />
-      <button onClick={handleTextSkip} style={styles.skip}>Don't Remember? Try the Next Word ➡</button> {/* skip function inherted from parent component*/}
     </div>
   );
 }
@@ -160,51 +157,53 @@ function getComponents(handleSkip, handleTextSkip) {
 
 
 const [wordsObj, imageObj] = getFinalObjs() //get objects describing the image links and wordlists
+const combinedWordList = [...wordsObj[1], ...wordsObj[2],...wordsObj[3]] //combined word list (30 across 3 conditions)
+const combinedImgList = [...imageObj[1], ...imageObj[2],...imageObj[3]] //combined image links list (30 across 3 conditions)
+
 
 export default function Images(props) { //main parent image component 
   const [index, setIndex] = useState(0); //this index is key, the
   const [cond, setCond] = useState(1); //image condition: possible choices are 1-3
   const [cond1, setCond1] = useState(0);//cond 1 accuracy (tracks accuracy of all cond1 cases)
-  const [cond2, setCond2] = useState(0);//cond 1 accuracy (tracks accuracy of all cond1 cases)
-  const [cond3, setCond3] = useState(0);//cond 1 accuracy (tracks accuracy of all cond1 cases)
+  const [cond2, setCond2] = useState(0);//cond 2 accuracy (tracks accuracy of all cond1 cases)
+  const [cond3, setCond3] = useState(0);//cond 3 accuracy (tracks accuracy of all cond1 cases)
+  const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
   const navigate = useNavigate();
 
-  //function to handle the skip between text components to photo-image ones 
-  const handleTextSkip = () => {
-    if (index < 9 && cond < 3) { //if the index is less than 10
-      
-      console.log("new index:",index+1, "new text:", wordsObj[cond][index], "current cond", cond)
-      setComponent(<TextImageSplit text={wordsObj[cond][index+1]} imageUrl={imageObj[cond][index+1]} handleSkip={handleSkip}/>)
-      setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached 
+  const nextSection = () => {
+    //if index is even, this is an image one, so we move to a text one
+    if (index % 2 == 0) {
+      setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
+    } else {
+      setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
+      //move to the next component lists when 
+      setComponents([
+        <TextImageSplit text={combinedWordList[index]} imageUrl={combinedImgList[index]}/>,
+        <WordMatcher targetWord={combinedWordList[index]} handleTextSkip={handleTextSkip}/>
+      ])
     }
-    else if (index == 9 && cond < 3) {
-      //in this case, update the conditioning number
-      setComponent(<TextImageSplit text={wordsObj[cond+1][0]} imageUrl={imageObj[cond+1][0]} handleSkip={handleSkip}/>)
-      setIndex(0) //reset to 0
-      setCond((prev)=>(prev+1))//increment condition
-    } else if (cond == 3) {
-      setComponent(<div>done</div>)
-    }
-    
   }
-  // function to handle the skip between photos -image components
-  const handleSkip = () => {
-    //here, go to the word validator
-    setComponent(<WordMatcher targetWord={wordsObj[cond][index]} handleTextSkip={handleTextSkip}/>)
-  };
 
-
-  //set the current react component 
-  //set the current react component.
-  const [currComponent, setComponent] = useState(<TextImageSplit text={wordsObj[cond][index]} imageUrl={imageObj[cond][index]} handleSkip={handleSkip}/>)
+  //function to handle the skip between text components to photo-image one. Here, we also update the condition number
+  const handleTextSkip = (correct) => {
+    console.log("text entered correct?"+ correct)
+  }
+  
+  //set the current react component list
+  const [currComponents, setComponents] = useState([
+    <TextImageSplit text={combinedWordList[index]} imageUrl={combinedImgList[index]}/>,
+    <WordMatcher targetWord={combinedWordList[index]} handleTextSkip={handleTextSkip}/>
+  ])
 
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each word</h2>
 
-      {currComponent} {/* render component in the index*/}
+      {currComponents[index % 2]} {/* render component in the index (0 or 1) of the list of components*/}
       
+
+      <button onClick={nextSection} style={styles.skip}>Don't Remember? Try the Next Word ➡</button> {/* skip function inherted from parent component*/}
       <button onClick={() => navigate('/')} style={styles.back}>
       ⬅ Back to Menu
       </button>
