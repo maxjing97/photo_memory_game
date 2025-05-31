@@ -68,44 +68,12 @@ const TextImageSplit = ({ text, imageUrl}) => {
     </div>
   );
 };
-//child component 2: submission component
-const WordMatcher = ({ targetWord,  handleTextSkip }) => {
-  const [correct, setCorrect] = useState(0); // store if the value is correct or not
 
-  const handleChange = (e) => {
-    const value = e.target.value;
-    console.log("Current typed word:"+value)
-    console.log("current target word:"+targetWord)
-    if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
-      setCorrect(1)
-      handleTextSkip(1) //if word matches, handle the textSkip
-    }
-  };
-
-  return (
-    <div style={styles.text_wrapper}>
-      <input
-        type="text"
-        onChange={handleChange}
-        placeholder="Start typing..."
-        style={styles.text_input}
-      />
-    </div>
-  );
-}
-
-{/*create 2 final JSON object (keys are conditions) of words and the matching image files links, used to create react components in the main function*/}
-function getFinalObjs() {
-  let returnWords = {
-    1: [],
-    2: [],
-    3: []
-  }
-  let returnImages = {
-    1: [],
-    2: [],
-    3: []
-  }
+//function to get the list of components used
+function getComponents() { 
+  let component_list = []
+  let final_word_list = [] //final word list to return 
+  //loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
   for(let cond = 1; cond <= 3; cond++) {
     const [list_name, relevant, irrelevant] = randomWordList() //destructure
     let image_paths = getFolderPaths(list_name)
@@ -116,68 +84,97 @@ function getFinalObjs() {
       wordList = irrelevant
     }
     //additionally, if image condition if 2, we set image paths of invalid (bc we want to show no images)
+    if(cond === 2) {
+      image_paths = Array(10).fill("../bs")
+    }
     if(cond == 2) {
       image_paths = Array(10).fill("/test_images/blank.png")
     }
-    returnWords[cond] = wordList
-    returnImages[cond] = image_paths 
+    for(let i = 0; i < 10; i++) {
+      //pass to another defined component that returns the image+card combination
+      //depending on the condition, we give different combinations to the components
+      const currWord = wordList[i]
+      final_word_list.push(currWord)//add word to the final word list
+      const imageComponent = <TextImageSplit text={currWord} imageUrl={image_paths[i]}/>
+      const textInput = <div>
+                          <h2>Try to remember the word you just saw</h2>
+                        </div>
+      component_list.push(imageComponent) //add image component to the list
+      component_list.push(textInput)
+    }
   }
-  return [returnWords,returnImages]
+  //return the total word list and the component list
+  return [component_list, final_word_list]
 }
 
-
-const [wordsObj, imageObj] = getFinalObjs() //get objects describing the image links and wordlists
-const combinedWordList = [...wordsObj[1], ...wordsObj[2],...wordsObj[3]] //combined word list (30 across 3 conditions)
-const combinedImgList = [...imageObj[1], ...imageObj[2],...imageObj[3]] //combined image links list (30 across 3 conditions)
+////tracks accuracy of all words 30 for now, every 10 different conditions
+let accuracies = Array(30).fill(0)
 
 
-export default function Images(props) { //main parent image component 
-  const [index, setIndex] = useState(0); //this index is key, cycling through through all words
+const [components, word_list] = getComponents() //get list of current components, word list
+
+export default function Images(props) { //main parent image component (to avoid remounts when changing child components shown)
+  const [index, setIndex] = useState(0); //this index is key, cycling through through all words (60 for now 2 for ach)
   const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
   const [cond, setCond] = useState(1); //image condition: possible choices are 1-3
-  const [cond1, setCond1] = useState(0);//cond 1 accuracy (tracks accuracy of all cond1 cases)
-  const [cond2, setCond2] = useState(0);//cond 2 accuracy (tracks accuracy of all cond1 cases)
-  const [cond3, setCond3] = useState(0);//cond 3 accuracy (tracks accuracy of all cond1 cases)
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
   const navigate = useNavigate();
+    
+  useEffect(() => { //testing if component is unmounted (avoid necessary ones to preserve state)
+    return () => console.log('Unmounted');
+  }, []);
 
-  const nextSection = () => {
+  const nextSection = () => { // (0 by default)
     //if isText is 0, this is an image one, so we move to a text one (so we stay on the same word)
     if (isText == 0) {
+      setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
       setIsText(1); //move to the text section 
       setnextText("Don't Remember? Try the Next Word ➡")
-    } else {
-      console.log()
+    } else { //in this case, the user has skipped the section, so record the accuracy as 0 for this, while moving on to the next image to test
       setIsText(0); //move to the word section 
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
       setnextText("Skip to test ➡")//set the appropriate text for the button
       //update component list to the next index since state changes in React do not apply immediately, being applied by the next render cycle
-      setComponents([
-        <TextImageSplit text={combinedWordList[index+1]} imageUrl={combinedImgList[index+1]}/>,
-        <WordMatcher targetWord={combinedWordList[index+1]} handleTextSkip={handleTextSkip}/> 
-      ])
     }
   }
 
-  //function to handle the skip between text components to photo-image one. Here, we also update the condition number
-  const handleTextSkip = (correct) => {
-    console.log("text entered correct?"+ correct)
-  }
-  
-  //set the current react component list
-  const [currComponents, setComponents] = useState([
-    <TextImageSplit text={combinedWordList[0]} imageUrl={combinedImgList[index]}/>,
-    <WordMatcher targetWord={combinedWordList[0]} handleTextSkip={handleTextSkip}/>
-  ])
-  console.log("current word index:", index)
-  console.log("word_list:", combinedWordList)
+  //function used to handle changes in the text input box
+  const handleTextChange = (e) => {
+    console.log("index:", index)
+    const value = e.target.value;
+    const targetWord = word_list[(index-1)/2] //get the target for based on the for index
+    console.log("targetWord:",targetWord)
+    if (value.trim().toLowerCase() === targetWord.toLowerCase()) {
+      console.log("trigged: correct text entered")
+      accuracies[(index-1)/2] = 1 //find the correponding accuracy index to change
+    }
+  };
+
+  console.log("accuracies:", accuracies)
+
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each word</h2>
 
-      {currComponents[isText]} {/* render component in the index (0 or 1) of the list of components*/}
-      
+      {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
+      {components.map((Component, i) => (
+        <div key={i} style={{ display: index == i ? 'block' : 'none' }}>
+          {Component}
+        </div>
+      ))}
+
+      {/* button for inputting text-display only if the index is odd*/}
+      <div style={{ display: (index % 2 == 1) ? 'block' : 'none' }}>
+        <div style={styles.text_wrapper}>
+          <input
+            type="text"
+            onChange={handleTextChange}
+            placeholder="Start typing..."
+            style={styles.text_input}
+          />
+        </div>
+      </div>
 
       <button onClick={nextSection} style={styles.skip}>{nextText}</button> {/* skip function inherted from parent component*/}
       <button onClick={() => navigate('/')} style={styles.back}>
