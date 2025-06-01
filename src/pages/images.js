@@ -142,7 +142,7 @@ export default function Images(props) { //main parent image component (to avoid 
   const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
   const [text, setText] = useState(''); //set text in the input box
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
-  const timeoutTime = parseInt(props.time) * 1000 //calculate ms to allow the user to see the image
+  const timeoutTime = Math.floor(parseFloat(props.time) * 1000) //calculate ms to allow the user to see the image
   const navigate = useNavigate();
   
 

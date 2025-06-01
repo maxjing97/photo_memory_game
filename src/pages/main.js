@@ -13,6 +13,7 @@ export default function Main() {
                 </div>
                 <h2>Select a time for the challenge</h2>
                 <div style={styles.buttonContainer}>
+                    <button onClick={() =>  navigate('/1-3select')} style={styles.button}>1/3s</button>
                     <button onClick={() =>  navigate('/1select')} style={styles.button}>1s</button>
                     <button onClick={() => navigate('/3select') } style={styles.button}>3s</button>
                 </div>

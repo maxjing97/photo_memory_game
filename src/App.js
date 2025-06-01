@@ -16,6 +16,7 @@ function App() {
       <Route path="/stats"  element={<Stats />}/>
       {/*defining routes within the main page*/}
 
+      <Route path="/1-3select"  element={<Images time="0.33"/>}/>
       <Route path="/1select"  element={<Images time="1"/>}/>
       <Route path="/3select"  element={<Images time="3"/>}/>
     </Routes>
