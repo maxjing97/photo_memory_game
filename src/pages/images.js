@@ -142,13 +142,24 @@ export default function Images(props) { //main parent image component (to avoid 
   const [isText, setIsText] = useState(0); //states weather we access the first (image) or second(text) component in our current 2-element component
   const [text, setText] = useState(''); //set text in the input box
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
+  const timeoutTime = parseInt(props.time) * 1000 //calculate ms to allow the user to see the image
   const navigate = useNavigate();
-    
-  useEffect(() => { //testing if component is unmounted (avoid necessary ones to preserve state)
-    return () => console.log('Unmounted');
-  }, []);
+  
 
-  const nextSection = () => { // (0 by default)
+  useEffect(() => { //testing if component is unmounted (avoid necessary ones to preserve state)
+    //runs a timer function that advances the image after a certain amount of milliseconds (determined by the prop)
+    if (isText == 0 && componentList.length != 1) { //if the process as not ended yet
+        const timeout = setTimeout(() => {
+          console.log("image timed out")
+          nextSection()
+      }, timeoutTime);
+      return () => clearTimeout(timeout); //clear timeout on render
+    } 
+    return
+  }); //cause use effect to run after each render (adding a timmer)
+
+  const nextSection = () => { 
+    console.log("current index: "+index+", isText:"+isText )
     //if isText is 0, this is an image one, so we move to a text one (so we stay on the same word)
     if (isText == 0 && index < 59) {
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
@@ -179,8 +190,6 @@ export default function Images(props) { //main parent image component (to avoid 
     }
   };
 
-
-  console.log(index)
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
@@ -189,14 +198,14 @@ export default function Images(props) { //main parent image component (to avoid 
       <div style={styles.text_container}>
       {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
       {componentList.map((Component, i) => (
-        <div key={i} style={{ display: index == (i % componentList.length) ? 'block' : 'none' }}>
+        <div key={i} style={{ display: index == (i) ? 'block' : 'none' }}>
           {Component}
         </div>
       ))}
 
-      {/* button for inputting text-display only if the index is odd*/}
+      {/* button for inputting text-display only if is text is odd*/}
       
-        <div style={{ display: (index % 2 == 1) ? 'block' : 'none' }}>
+        <div style={{ display: (isText == 1) ? 'block' : 'none' }}>
           <div style={styles.text_wrapper}>
             <input
               type="text"

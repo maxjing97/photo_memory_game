@@ -16,8 +16,8 @@ function App() {
       <Route path="/stats"  element={<Stats />}/>
       {/*defining routes within the main page*/}
 
-      <Route path="/5select"  element={<Images time="5"/>}/>
-      <Route path="/30select"  element={<Images time="30"/>}/>
+      <Route path="/1select"  element={<Images time="1"/>}/>
+      <Route path="/3select"  element={<Images time="3"/>}/>
     </Routes>
     </div>
     </>
