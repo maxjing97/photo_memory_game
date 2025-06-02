@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 //add component to display the challenge
@@ -150,7 +150,9 @@ export default function Images(props) { //main parent image component (to avoid 
   const [nextText, setnextText] = useState("Skip to test ➡");//text to display in the next button
   const timeoutTime = Math.floor(parseFloat(props.time) * 1000) //calculate ms to allow the user to see the image
   const navigate = useNavigate();
-  
+  const inputRef = useRef(null); //use to focus cursor. UseRef hooks create object that lasts through renders, and modifying does not trigger a re-render
+
+
   //function to send data to the database once all is done
   const sendData = async(lim, cond, accuracy,correct_count) => {
     try{
@@ -188,11 +190,13 @@ export default function Images(props) { //main parent image component (to avoid 
       }, timeoutTime);
       return () => clearTimeout(timeout); //clear timeout on render
     } 
+    if (inputRef.current && isText == 1) { // Automatically focus the text field on mount and if isText == 1
+      inputRef.current.focus();
+    }
     return
   }); //cause use effect to run after each render (adding a timmer)
 
   const nextSection = () => { 
-    console.log("current index: "+index+", isText:"+isText )
     //if isText is 0, this is an image one, so we move to a text one (so we stay on the same word)
     if (isText == 0 && index < 59) {
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
@@ -207,9 +211,9 @@ export default function Images(props) { //main parent image component (to avoid 
       //when we have reached the end, only display the results page: reset component list, and send the data, calculating accuracies
       const [a1, a2, a3] = getAccuracies()
       console.log(a1+","+a2 +","+a3)
-      sendData(props.time, 1, a1, a1*10,a1)
-      sendData(props.time, 2, a2, a2*10, a2)
-      sendData(props.time, 3, a3, a3*10, a3)
+      sendData(props.time, 1, a1*10,a1)
+      sendData(props.time, 2, a2*10, a2)
+      sendData(props.time, 3, a3*10, a3) //lim, cond, accuracy,correct_count
       setIndex(0);
       setIsText(0);
       setComponentList([<Results data={accuracies} time_limit={props.time}/>])
@@ -228,36 +232,53 @@ export default function Images(props) { //main parent image component (to avoid 
     }
   };
 
+  //function to handle exist to menu
+  const menuExit = (e) =>{
+    //in the case, we are not at the results page, show a warning window before exiting to menu
+    if (componentList.length != 1) {
+      const confirmed = window.confirm("Are you sure you want to proceed?"); //confirm for this case as a precaution to avoid exiting to menu
+      if (confirmed) {
+        navigate('/') //exist to menu
+      } 
+    } else { //otherwise, do so automatically
+      navigate('/') //exist to menu
+    }
+  }
+
+  console.log("current index: "+index+", isText:"+isText )
   return (
     <div style={styles.all}>
       <h1>Let's see how you remember 10 words with and without the help of images</h1>
       <h2>you have {props.time} seconds for each word</h2>
 
       <div style={styles.text_container}>
-      {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
-      {componentList.map((Component, i) => (
-        <div key={i} style={{ display: index == (i) ? 'block' : 'none' }}>
-          {Component}
-        </div>
-      ))}
+        {/* render all components with varying visiblity to avoid unmounting, destroying vital state variables. Renders components in order*/}
+        {componentList.map((Component, i) => (
+          <div key={i} style={{ display: index == (i) ? 'block' : 'none' }}>
+            {Component}
+          </div>
+        ))}
 
-      {/* button for inputting text-display only if is text is odd*/}
-      
+        {/* button for inputting text-display only if is text is odd*/}
+        
         <div style={{ display: (isText == 1) ? 'block' : 'none' }}>
           <div style={styles.text_wrapper}>
             <input
               type="text"
               value = {text}
+              ref={inputRef}
               onChange={handleTextChange}
               placeholder="Start typing..."
               style={styles.text_input}
             />
           </div>
         </div>
+
+        <p style={{display: componentList.length != 1 ? 'block' : 'none' }}>Word {Math.floor(index/2)} of 30 total</p> 
       </div>
 
       <button onClick={nextSection} style={{...styles.skip, ...{display: componentList.length != 1 ? 'block' : 'none' }}}>{nextText}</button> {/* skip function inherted from parent component (display only the number of components is not 0)*/}
-      <button onClick={() => navigate('/')} style={styles.back}>
+      <button onClick={menuExit} style={styles.back}>
       ⬅ Back to Menu
       </button>
     </div>
