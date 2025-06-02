@@ -85,14 +85,10 @@ const Results = ({data, time_limit}) => {
   //compute total accuracy
   const total = data.slice(0, 30).reduce((a,b)=>a+b,0)
   
-  //async function that sends data (inserting 3 entries in the database)
-  async function sendData(data, cond, accuracy)
 
   useEffect(()=>{
-    sendData()
-    return 
-  })
-  
+    return () => {} 
+  }, []) //call only once on mount
   
   return (
     <div>
@@ -155,7 +151,34 @@ export default function Images(props) { //main parent image component (to avoid 
   const timeoutTime = Math.floor(parseFloat(props.time) * 1000) //calculate ms to allow the user to see the image
   const navigate = useNavigate();
   
-
+  //function to send data to the database once all is done
+  const sendData = async(lim, cond, accuracy,correct_count) => {
+    try{
+      const send_data = {"limit_value":lim, 
+                      "condition": cond,
+                      "accuracy":accuracy,
+                      "correct_count": correct_count,
+                    } //data to send
+      const postReq = await fetch("http://localhost:2008/add-data",{
+        method:"POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(send_data)
+      });
+    } catch (err) {
+      console.log("error sending data")
+    }
+  }
+  
+  //calculate counts of correct values
+  const getAccuracies = () => {
+    const a1 = accuracies.slice(0,10).reduce((a,b)=>a+b,0) //compute accuracy for condition 1 (sum elements from 1 to 10), then divide by 10 
+    const a2 = accuracies.slice(10,20).reduce((a,b)=>a+b,0) //compute accuracy for condition 2
+    const a3 = accuracies.slice(20,30).reduce((a,b)=>a+b,0) //compute accuracy for condition 3
+    return [a1, a2, a3]
+  }
+  
   useEffect(() => { //testing if component is unmounted (avoid necessary ones to preserve state)
     //runs a timer function that advances the image after a certain amount of milliseconds (determined by the prop)
     if (isText == 0 && componentList.length != 1) { //if the process as not ended yet
@@ -181,10 +204,15 @@ export default function Images(props) { //main parent image component (to avoid 
       setnextText("Skip to test ➡")//set the appropriate text for the button
       //update component list to the next index since state changes in React do not apply immediately, being applied by the next render cycle
     } else {
-      //when we have reached the end, only display the results page: reset component list
+      //when we have reached the end, only display the results page: reset component list, and send the data, calculating accuracies
+      const [a1, a2, a3] = getAccuracies()
+      console.log(a1+","+a2 +","+a3)
+      sendData(props.time, 1, a1, a1*10,a1)
+      sendData(props.time, 2, a2, a2*10, a2)
+      sendData(props.time, 3, a3, a3*10, a3)
       setIndex(0);
       setIsText(0);
-      setComponentList([<Results data={accuracies}/>])
+      setComponentList([<Results data={accuracies} time_limit={props.time}/>])
     }
   }
 

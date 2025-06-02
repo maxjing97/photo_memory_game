@@ -4,7 +4,6 @@ const db = require('./db');  // Import the database connection
 const cors = require('cors'); ///allow corss origin
 const app = express();
 const rateLimit = require('express-rate-limit');
-
 const argon2 = require('argon2');
 
 app.use(express.json());
@@ -21,13 +20,12 @@ app.use(limiter);
 app.use(cors());  //enlabed cors
 
 //basic post request to send data for certain condition
-app.use(express.json());
 app.post('/add-data', (req, res) => {
-    const { lim, cond ,acc, count } = req.body; //get the assumed json body
-    const query = `INSERT INTO main (limit, condition, accuracy,correct_count) VALUES (?, ?, ?, ?);`;
-    db.query(query, [`${lim}`,`${cond}`,`${acc}`,`${count}`], (err, results) => {
+    const { limit_value,condition,accuracy,correct_count} = req.body; //get the assumed json body
+    const query = `INSERT INTO main (time_limit, image_condition, accuracy, correct_count) VALUES (?, ?, ?, ?);`;
+    db.query(query, [`${limit_value}`,`${condition}`,`${accuracy}`,`${correct_count}`], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Database query failed' });
+            return res.status(500).json({ error: err.message });
         }
         res.status(200).json({ message: 'Item inserted successfully'});
     });
@@ -35,7 +33,7 @@ app.post('/add-data', (req, res) => {
 
 
 // Start server on port 2001
-const PORT = 2001;
+const PORT = 2008;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
