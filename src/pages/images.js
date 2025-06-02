@@ -78,19 +78,29 @@ const TextInput = () => {
   );
 };
 //child component 3: component to display the final results and connect to a database to store them
-const Results = ({data}) => {
-  const a1 = data.slice(0, 10).reduce((a,b)=>a+b,0) //compute accuracy for condition 1 (sum elements from 1 to 10), then divide by 10 
+const Results = ({data, time_limit}) => {
+  const a1 = data.slice(0,10).reduce((a,b)=>a+b,0) //compute accuracy for condition 1 (sum elements from 1 to 10), then divide by 10 
   const a2 = data.slice(10,20).reduce((a,b)=>a+b,0) //compute accuracy for condition 2
-  const a3 = data.slice(20, 30).reduce((a,b)=>a+b,0) //compute accuracy for condition 3
+  const a3 = data.slice(20,30).reduce((a,b)=>a+b,0) //compute accuracy for condition 3
   //compute total accuracy
   const total = data.slice(0, 30).reduce((a,b)=>a+b,0)
+  
+  //async function that sends data (inserting 3 entries in the database)
+  async function sendData(data, cond, accuracy)
+
+  useEffect(()=>{
+    sendData()
+    return 
+  })
+  
+  
   return (
     <div>
       <h2>Results Page</h2>
       <h3>Here are results of your memory test:</h3>
-      <p>Accuracy when shown a relevant image + word {a1 * 10}%</p>
-      <p>Accuracy when shown a no image + word {a2 * 10}%</p>
-      <p>Accuracy when shown an irrelevant image + word {a3 * 10}%</p>
+      <p>Accuracy when shown a relevant image + word {a1*10}%</p>
+      <p>Accuracy when shown a no image + word {a2*10}%</p>
+      <p>Accuracy when shown an irrelevant image + word {a3*10}%</p>
       <p>total accuracy: {Math.floor(total/30*100)}% or {total} correct</p>
     </div>
   );

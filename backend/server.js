@@ -19,3 +19,23 @@ app.use(limiter);
 
 
 app.use(cors());  //enlabed cors
+
+//basic post request to send data for certain condition
+app.use(express.json());
+app.post('/add-data', (req, res) => {
+    const { lim, cond ,acc, count } = req.body; //get the assumed json body
+    const query = `INSERT INTO main (limit, condition, accuracy,correct_count) VALUES (?, ?, ?, ?);`;
+    db.query(query, [`${lim}`,`${cond}`,`${acc}`,`${count}`], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        res.status(200).json({ message: 'Item inserted successfully'});
+    });
+});
+
+
+// Start server on port 2001
+const PORT = 2001;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
