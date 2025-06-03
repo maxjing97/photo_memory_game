@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React,  from 'react';
 import "../App.css"
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,6 @@ export default function Main() {
 
 const styles = {
     page: {
-        height: '100vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
