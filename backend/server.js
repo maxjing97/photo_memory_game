@@ -31,6 +31,22 @@ app.post('/add-data', (req, res) => {
     });
 });
 
+//basic get request
+app.get('/get-all-data', (req, res) => {
+    //format the query
+    const query = `
+        SELECT *
+        FROM main
+    `;
+    db.query(query, [], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database query failed' });
+        } 
+        res.json(results);
+    });
+});
+
+
 
 // Start server on port 2001
 const PORT = 2008;
