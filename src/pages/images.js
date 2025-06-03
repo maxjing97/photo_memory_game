@@ -161,7 +161,7 @@ export default function Images(props) { //main parent image component (to avoid 
                       "accuracy":accuracy,
                       "correct_count": correct_count,
                     } //data to send
-      const postReq = await fetch("http://localhost:2008/add-data",{
+      const postReq = await fetch("https://photomemorygame-production.up.railway.app/add-data",{
         method:"POST",
         headers: {
           'Content-Type': 'application/json'
