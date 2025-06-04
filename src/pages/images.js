@@ -206,9 +206,10 @@ export default function Images(props) { //main parent image component (to avoid 
       setIsText(1); //move to the text section 
       setnextText("Don't Remember? Try the Next Word ➡")
     } else if (isText == 1 && index < 59) { //in this case, the user has skipped the section, so record the accuracy as 0 for this, while moving on to the next image to test
-      setIsText(0); //move to the word section 
+      setIsText(0); //move to the image section 
       setIndex((prev) => (prev + 1)); //go to the next one as long as the end has not been reached
       setnextText("Skip to test ➡")//set the appropriate text for the button
+      setText("")//when the skip button is clicked, reset the value of the text input box
       //update component list to the next index since state changes in React do not apply immediately, being applied by the next render cycle
     } else {
       //when we have reached the end, only display the results page: reset component list, and send the data, calculating accuracies
