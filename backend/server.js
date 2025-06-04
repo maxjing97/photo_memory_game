@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const argon2 = require('argon2');
 
 app.use(express.json());
+app.set('trust proxy', true);
 
 // Apply rate limiting middleware. Limits per client. Basic DDOS protection
 const limiter = rateLimit({
