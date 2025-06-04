@@ -9,7 +9,7 @@ function About() {
          with similar conditions and experiment set-up. 
       </p>
 
-      <iframe title="report" style={styles.report} src="https://drive.google.com/drive/u/0/folders/1OeX7XSFl2nwG75jXziI4daEXuj3j4avO"></iframe>
+      <iframe title="report" style={styles.report} src="https://drive.google.com/file/d/1gOrGtIwSg8hil2HiDVg2_0gnG3GkN7Cg/view?usp=sharing"></iframe>
 
       <a href="https://docs.google.com/spreadsheets/d/10sIQ44Zm_Yk1Ob8v1lmkN0InK4ypkwnqDSVQdz5T6mY/edit?gid=0#gid=0">Data used (Google Sheets link)</a>
     </div>
