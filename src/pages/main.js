@@ -14,8 +14,10 @@ export default function Main() {
                 <div style={styles.buttonContainer}>
                     <button onClick={() =>  navigate('/1-3select')} style={styles.button}>1/3s</button>
                     <button onClick={() =>  navigate('/1select')} style={styles.button}>1s</button>
-                    <button onClick={() => navigate('/3select') } style={styles.button}>3s</button>
+                    <button onClick={() => navigate('/2select') } style={styles.button}>2s</button>
                 </div>
+
+                <p>1/3 s time recommended for a challenge</p>
             </div>
         </div>
     );

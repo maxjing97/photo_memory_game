@@ -20,7 +20,7 @@ function App() {
 
       <Route path="/1-3select"  element={<Images time="0.33"/>}/>
       <Route path="/1select"  element={<Images time="1"/>}/>
-      <Route path="/3select"  element={<Images time="3"/>}/>
+      <Route path="/2select"  element={<Images time="2"/>}/>
     </Routes>
     </div>
     </>
