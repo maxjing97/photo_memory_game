@@ -14,17 +14,7 @@ const listB = ["forest", "castle","ladder", "notebook", "candle",
 const listC = ["train", "feather","coins", "whale", "telescope",
         "compass","dragon","fountain", "diamond","mask"] 
 
-//function to get the paths of photos for a certain list
-function getFolderPaths(letter) {
-  let paths = []
-
-  for(let i = 1; i <= 10; i++) {
-    paths.push(`../test_images/list${letter}/${String(i)}.png`)
-  }
-  return paths 
-}
-
-//function to randomly select a word list with its name, and a randomly selected irrelevant word list
+//function to randomly select a word list with its name and corresponding image list, and a randomly selected irrelevant word list
 function randomWordList() {
   //randomly select a list to use
   const list_names = ["A","B","C"] 
@@ -32,7 +22,6 @@ function randomWordList() {
   //get the correspoding words in order
   let word_list = []
   let irrelevant_list = [] //word list of excluded words to include in the list of 10 irrelevant words to be randomly chosen
-
   switch(list_chosen) {
     case "A":
       word_list = listA
@@ -56,7 +45,22 @@ function randomWordList() {
   }
   irrelevant_words = Array.from(irrelevant_words) //convert to list
 
-  return [list_chosen, word_list, irrelevant_words ]
+
+  let image_paths = [] //get image paths
+  for(let i = 1; i <= 10; i++) {
+    image_paths.push(`../test_images/list${list_chosen}/${String(i)}.png`)
+  }
+
+  //shuffle the word_list and image paths randomly:
+  const result = [...word_list];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]]; // Swap elements
+    [image_paths[i], image_paths[j]] = [image_paths[j], image_paths[i]]; // Swap elements
+  }
+  word_list = result
+
+  return [image_paths, word_list, irrelevant_words ]
 }
 
 //child component 1: display images + text etc
@@ -109,8 +113,7 @@ function getComponents() {
   let final_word_list = [] //final word list to return 
   //loop through the 3 conditions, 10 images for each condition (1==relevant image + text, 2 == no image + text, 3==irrelevant image + text)
   for(let cond = 1; cond <= 3; cond++) {
-    const [list_name, relevant, irrelevant] = randomWordList() //destructure
-    let image_paths = getFolderPaths(list_name)
+    let [image_paths, relevant, irrelevant ] = randomWordList() //destructure
     let wordList = [] //we choose either relevant or irrelevant word lists to used based on the condition
     if(cond == 1) {
       wordList = relevant
