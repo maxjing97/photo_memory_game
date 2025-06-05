@@ -5,7 +5,7 @@ function About() {
     <div>
       <h1 className='stats-title'>About</h1>
       <p>My project is based on the following report and data linked below:</p>
-      <p>To summarize, the report is a study done with two friends,  measuring the accuracy of how well users measured certain words,
+      <p>To summarize, the report is a study done with two friends,  measuring the accuracy of how well users remembered certain words,
          with similar conditions and experiment set-up. 
       </p>
 
